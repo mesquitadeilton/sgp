@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="SGP">
+  <rect width="512" height="512" rx="112" fill="#7A0C1E"/>
+  <rect x="38" y="38" width="436" height="436" rx="88" fill="none" stroke="#E5A93B" stroke-width="24"/>
+  <text x="256" y="286" text-anchor="middle" dominant-baseline="middle" font-family="Arial, Helvetica, sans-serif" font-size="156" font-weight="800" fill="#FFF8EA">SGP</text>
+  <path d="M148 352h216" stroke="#E5A93B" stroke-width="24" stroke-linecap="round"/>
+</svg>

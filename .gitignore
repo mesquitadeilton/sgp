@@ -1,0 +1,14 @@
+node_modules/
+dist/
+data/
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.log
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak
+*.old

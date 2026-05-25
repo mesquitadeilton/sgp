@@ -1,0 +1,47 @@
+{
+  "name": "sgp-dizimo",
+  "version": "1.0.0",
+  "description": "Sistema de Gestão Paroquial - SGP",
+  "main": "src/main/main.js",
+  "author": "Paróquia Santa Luzia de Siracusa",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "pack": "electron-builder --dir",
+    "dist:folder": "electron-builder --dir",
+    "dist:installer": "electron-builder --win",
+    "dist": "electron-builder --dir"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron-builder": "^26.0.12",
+    "electron": "^42.2.0"
+  },
+  "build": {
+    "appId": "br.org.paroquiasantaluzia.sgp",
+    "productName": "SGP",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "src/**/*",
+      "build/**/*",
+      "package.json"
+    ],
+    "win": {
+      "icon": "build/icon.ico",
+      "artifactName": "Instalador SGP ${version}.${ext}",
+      "signAndEditExecutable": true,
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowElevation": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

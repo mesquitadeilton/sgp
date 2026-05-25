@@ -1,0 +1,736 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestão Paroquial - SGP</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <link rel="icon" href="assets/favicon.png">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen">
+
+    <section id="module-home" class="module-home min-h-screen bg-[#F6F2EC] flex items-center justify-center px-4 py-10 opacity-100 transition-all duration-300 ease-out">
+        <div class="max-w-5xl w-full">
+            <div class="text-center mb-8">
+                <div class="mx-auto bg-white rounded-xl border border-[#E5A93B]/40 shadow-sm w-24 h-24 flex items-center justify-center mb-4">
+                    <img id="home-brasao" src="assets/app-icon.png" alt="Brasão Paroquial" class="w-20 h-auto object-contain">
+                </div>
+                <h1 id="home-title" class="text-2xl md:text-3xl font-bold text-slate-900">Sistema de Gestão Paroquial - SGP</h1>
+                <p id="home-parish-name" class="text-base font-semibold text-slate-700 mt-2">Configure o nome da paróquia</p>
+                <p class="text-sm text-slate-600 mt-2">Selecione o módulo que deseja utilizar.</p>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-5 justify-items-center">
+                <button onclick="openModule('agenda')" class="module-card module-card-square module-card-square-amber text-white rounded-2xl p-5 text-left shadow-sm transition-all group w-full max-w-[220px] min-h-[220px] flex flex-col justify-between">
+                    <span class="rounded-xl w-14 h-14 flex items-center justify-center bg-white/15 border border-white/20 transition-all">
+                        <i class="fa-solid fa-calendar-days text-2xl"></i>
+                    </span>
+                    <span class="block text-xl font-bold">Agenda</span>
+                </button>
+                <button onclick="openModule('dizimistas')" class="module-card module-card-square text-white rounded-2xl p-5 text-left shadow-sm transition-all group w-full max-w-[220px] min-h-[220px] flex flex-col justify-between">
+                    <span class="rounded-xl w-14 h-14 flex items-center justify-center bg-white/15 border border-white/20 transition-all">
+                        <i class="fa-solid fa-users text-2xl"></i>
+                    </span>
+                    <span class="block text-xl font-bold">Dizimistas</span>
+                </button>
+            </div>
+            <p class="text-xs text-slate-400 mt-6 text-center">Versão <span id="home-version">1.0</span></p>
+        </div>
+    </section>
+
+    <header id="app-header" class="sgp-header hidden opacity-0 -translate-y-2 transition-all duration-300 ease-out text-white shadow-md px-6 py-4 flex-col md:flex-row justify-between items-center gap-4 border-b-4">
+        <div class="flex flex-col md:flex-row items-center gap-4">
+            <div class="bg-white/10 p-1.5 rounded-lg backdrop-blur-sm border border-white/20">
+                <img id="header-brasao" src="assets/app-icon.png" alt="Brasão Paroquial" class="w-20 h-auto object-contain" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-block';">
+                <i class="fa-solid fa-church text-3xl text-red-600 hidden p-2 text-center"></i>
+            </div>
+            
+            <div class="text-center md:text-left">
+                <h1 id="nome-paroquia-header" class="text-xl md:text-2xl font-bold tracking-wide uppercase">Sistema de Gestão Paroquial - SGP</h1>
+                <p class="text-xs md:text-sm text-[#E5A93B] font-medium tracking-wide uppercase mt-0.5">Sistema de Gestão Paroquial</p>
+                <p id="module-breadcrumb" class="whereami-chip"></p>
+            </div>
+        </div>
+        
+        <div class="flex flex-col items-center md:items-end gap-1.5 text-sm w-full md:w-auto">
+            <div class="flex items-center justify-center md:justify-start gap-2 text-white bg-black/15 px-4 py-2 rounded-xl backdrop-blur-sm border border-white/5 w-full md:w-auto">
+                <i class="fa-regular fa-calendar text-[#E5A93B]"></i>
+                <span id="data-hoje" class="font-medium"></span>
+            </div>
+            <div class="flex items-center justify-center md:justify-start gap-2 text-white/80 px-2 text-xs">
+                <i class="fa-solid fa-location-dot"></i>
+                <span id="local-hoje"></span>
+            </div>
+        </div>
+    </header>
+
+    <div id="app-shell" class="hidden opacity-0 translate-y-3 transition-all duration-300 ease-out max-w-7xl mx-auto px-4 py-6 grid-cols-1 md:grid-cols-4 gap-6">
+        
+        <aside class="md:col-span-1 bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-col gap-1.5 h-fit">
+            <button onclick="showModuleHome()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-table-cells-large text-base w-5 text-center"></i> Módulos
+            </button>
+            <button onclick="openConfigModal()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-semibold text-sm transition-all text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-gear text-base w-5 text-center"></i> Configurar Paróquia
+            </button>
+
+            <div id="nav-dizimistas" class="border-t border-slate-100 my-3 pt-3 flex flex-col gap-1.5">
+            <p class="text-xs font-semibold text-slate-400 px-3 uppercase tracking-wider mb-2">Navegação</p>
+            
+            <button onclick="switchTab('tab-dashboard')" id="btn-tab-dashboard" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out bg-red-50 text-red-700 shadow-sm scale-[1.01]">
+                <i class="fa-solid fa-chart-pie text-base w-5 text-center"></i> Painel Geral
+            </button>
+            
+            <button onclick="switchTab('tab-dizimistas')" id="btn-tab-dizimistas" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-users text-base w-5 text-center"></i> Gerenciar Dizimistas
+            </button>
+            
+            <button onclick="switchTab('tab-devolucoes')" id="btn-tab-devolucoes" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-hand-holding-dollar text-base w-5 text-center"></i> Devolver Dízimo
+            </button>
+            
+            <button onclick="switchTab('tab-aniversariantes')" id="btn-tab-aniversariantes" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-cake-candles text-base w-5 text-center"></i> Aniversariantes
+                <span id="badge-aniversariantes" class="bg-amber-500 text-white text-xs font-bold px-2 py-0.5 rounded-full hidden ml-auto">0</span>
+            </button>
+            
+            <button onclick="switchTab('tab-relatorios')" id="btn-tab-relatorios" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                <i class="fa-solid fa-file-invoice-dollar text-base w-5 text-center"></i> Relatórios Financeiros
+            </button>
+            </div>
+
+            <div id="nav-agenda" class="hidden border-t border-slate-100 my-3 pt-3 flex-col gap-1.5">
+                <p class="text-xs font-semibold text-slate-400 px-3 uppercase tracking-wider mb-2">Navegação</p>
+                <button onclick="switchTab('tab-agenda')" id="btn-tab-agenda" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-calendar-days text-base w-5 text-center"></i> Calendário
+                </button>
+                <button onclick="switchTab('tab-ambientes')" id="btn-tab-ambientes" class="tab-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm transition-all duration-200 ease-out text-slate-600 hover:bg-slate-100">
+                    <i class="fa-solid fa-door-open text-base w-5 text-center"></i> Ambientes
+                </button>
+            </div>
+
+            <div id="nav-exportacao" class="border-t border-slate-100 my-3 pt-3">
+                <p class="text-xs font-semibold text-slate-400 px-3 uppercase tracking-wider mb-2">Exportação</p>
+                <button onclick="exportDizimistas()" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg font-medium text-sm text-emerald-700 hover:bg-emerald-50 transition-all">
+                    <i class="fa-solid fa-file-excel text-base w-5 text-center"></i> Exportar Dizimistas
+                </button>
+            </div>
+            <div class="mt-4 px-3 text-center">
+                <span class="text-[10px] text-slate-400 font-medium">Sistema de Gestão Paroquial - SGP • Versão 1.0</span>
+            </div>
+        </aside>
+
+        <main class="md:col-span-3 flex flex-col gap-6">
+            
+            <section id="tab-dashboard" class="tab-content active opacity-100 translate-y-0 transition-all duration-300 ease-out">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase">Total de Dizimistas</p>
+                            <h3 id="dash-total-dizimistas" class="text-2xl font-bold mt-1 text-slate-800">0</h3>
+                        </div>
+                        <div class="text-[#7A0C1E] bg-red-50 p-3 rounded-lg"><i class="fa-solid fa-users text-xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase">Arrecadação do Mês Atual</p>
+                            <h3 id="dash-arrecadacao-mes" class="text-2xl font-bold mt-1 text-emerald-600">R$ 0,00</h3>
+                        </div>
+                        <div class="text-emerald-600 bg-emerald-50 p-3 rounded-lg"><i class="fa-solid fa-calendar-check text-xl"></i></div>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-slate-400 uppercase">Aniversariantes do Mês</p>
+                            <h3 id="dash-aniversariantes-mes" class="text-2xl font-bold mt-1 text-amber-600">0</h3>
+                        </div>
+                        <div class="text-amber-600 bg-amber-50 p-3 rounded-lg"><i class="fa-solid fa-cake-candles text-xl"></i></div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-clock-rotate-left text-[#7A0C1E]"></i> Últimos Lançamentos de Dízimo
+                    </h2>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Dizimista</th>
+                                    <th class="p-3">Referência</th>
+                                    <th class="p-3 text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ultimos-lancamentos" class="divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-dizimistas" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+                    <h2 id="form-dizimista-title" class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-user-plus text-[#7A0C1E]"></i> Cadastrar Novo Dizimista
+                    </h2>
+                    <form id="form-dizimista" onsubmit="saveDizimista(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                        <input type="hidden" id="dizimista-id">
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Nome Completo</label>
+                            <input type="text" id="dizimista-nome" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Telefone</label>
+                            <input type="text" id="dizimista-telefone" placeholder="(82) 99999-9999" maxlength="15" oninput="maskPhone(this)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Data de Nascimento</label>
+                            <input type="text" id="dizimista-nascimento" placeholder="DD/MM/AAAA" maxlength="10" oninput="maskDate(this)" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div class="sm:col-span-4">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Endereço</label>
+                            <input type="text" id="dizimista-endereco" placeholder="Rua, número, bairro - cidade/UF" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div class="sm:col-span-4 flex justify-end gap-2 mt-2">
+                            <button type="button" onclick="cancelDizimistaEdit()" id="btn-cancelar-dizimista" class="hidden px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                            <button type="submit" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">Salvar Registro</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-address-book text-[#7A0C1E]"></i> Lista de Dizimistas Cadastrados
+                        </h2>
+                        <div class="flex gap-2">
+                            <div class="relative">
+                                <select id="filter-letra" onchange="renderDizimistasTable(true)" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                                    <option value="">Todos</option>
+                                    <option value="A">A</option><option value="B">B</option><option value="C">C</option>
+                                    <option value="D">D</option><option value="E">E</option><option value="F">F</option>
+                                    <option value="G">G</option><option value="H">H</option><option value="I">I</option>
+                                    <option value="J">J</option><option value="K">K</option><option value="L">L</option>
+                                    <option value="M">M</option><option value="N">N</option><option value="O">O</option>
+                                    <option value="P">P</option><option value="Q">Q</option><option value="R">R</option>
+                                    <option value="S">S</option><option value="T">T</option><option value="U">U</option>
+                                    <option value="V">V</option><option value="W">W</option><option value="X">X</option>
+                                    <option value="Y">Y</option><option value="Z">Z</option>
+                                </select>
+                            </div>
+                            <div class="relative max-w-xs w-full">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-3 text-slate-400 text-xs"></i>
+                                <input type="text" id="search-dizimistas" oninput="renderDizimistasTable(true)" placeholder="Buscar dizimista..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                    <th class="p-3">Nome</th>
+                                    <th class="p-3">Contato</th>
+                                    <th class="p-3">Nascimento</th>
+                                    <th class="p-3 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-dizimistas" class="divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <span>Registros por página:</span>
+                            <select id="dizimistas-per-page" onchange="handleDizimistasPerPageChange()" class="px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span id="dizimistas-page-info">0-0 de 0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="dizimistas-page-number" class="text-xs text-slate-500 min-w-[90px] text-center">Página 1 de 1</span>
+                            <button type="button" id="dizimistas-prev-page" onclick="changeDizimistasPage(-1)" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all border border-slate-200">Anterior</button>
+                            <button type="button" id="dizimistas-next-page" onclick="changeDizimistasPage(1)" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all border border-slate-200">Próxima</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-devolucoes" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-dollar-to-slot text-[#7A0C1E]"></i> Registrar Devolução de Dízimo
+                    </h2>
+                    <form onsubmit="saveDevolucao(event)" class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="sm:col-span-3 relative">
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Selecionar Dizimista</label>
+                            <input type="text" id="devolucao-dizimista-search" required placeholder="Digite o nome do dizimista..." oninput="filterDizimistasSelect(this.value)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                            <input type="hidden" id="devolucao-dizimista">
+                            <div id="devolucao-dizimista-dropdown" class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden">
+                                </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Valor da Devolução (R$)</label>
+                            <input type="text" id="devolucao-valor" required placeholder="0,00" oninput="maskCurrency(this)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Data do Pagamento</label>
+                            <input type="date" id="devolucao-data" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Referência</label>
+                            <input type="month" id="devolucao-referencia" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        </div>
+                        <div class="sm:col-span-3 flex justify-end mt-2">
+                            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">
+                                <i class="fa-solid fa-check mr-1.5"></i> Confirmar Lançamento
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <section id="tab-aniversariantes" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-cake-candles text-amber-500"></i> Aniversariantes
+                        </h2>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <div class="flex items-center gap-2">
+                                <label for="filter-aniversario-mes" class="text-xs text-slate-400">Mês</label>
+                                <input type="month" id="filter-aniversario-mes" onchange="applyAniversarioMonthFilter()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all duration-200">
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="date" id="filter-aniversario-inicio" onchange="clearAniversarioMonthAndRender()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all duration-200">
+                                <span class="text-xs text-slate-400">até</span>
+                                <input type="date" id="filter-aniversario-fim" onchange="clearAniversarioMonthAndRender()" class="px-3 py-1.5 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all duration-200">
+                            </div>
+                            <button onclick="clearAniversarioFilter()" class="px-3 py-1.5 text-xs text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Limpar</button>
+                            <button onclick="exportAniversariantesPDF()" class="px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                    <p id="aniversario-desc" class="text-xs text-slate-400 mb-4">Exibindo os fiéis que comemoram ano natalício da semana atual, de sábado até sexta-feira.</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                    <th class="p-3">Nome</th>
+                                    <th class="p-3">Dia do Aniversário</th>
+                                    <th class="p-3">Contato</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-aniversariantes" class="divide-y divide-slate-100">
+                                </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-relatorios" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 mb-6">
+                    <h2 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-filter text-[#7A0C1E]"></i> Filtrar Relatório de Arrecadação
+                    </h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Data Inicial</label>
+                            <input type="date" id="report-start" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 mb-1">Data Final</label>
+                            <input type="date" id="report-end" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                        </div>
+                        <div>
+                            <button onclick="generateReport()" class="w-full bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">
+                                <i class="fa-solid fa-magnifying-glass mr-1.5"></i> Filtrar e Gerar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800">Demonstrativo de Recebimentos</h2>
+                            <p id="report-period-text" class="text-xs text-slate-400 mt-0.5">Todos os lançamentos registrados</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="text-right">
+                                <span class="text-xs font-medium text-slate-400 uppercase block">Total Arrecadado</span>
+                                <span id="report-total-amount" class="text-xl font-bold text-emerald-600">R$ 0,00</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="exportReportPDF()" class="px-3 py-1.5 text-xs text-emerald-700 hover:bg-emerald-50 rounded-lg transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF
+                                </button>
+                                <button onclick="exportReportCSV()" class="px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 rounded-lg transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-file-csv"></i> CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                    <th class="p-3">Data</th>
+                                    <th class="p-3">Dizimista</th>
+                                    <th class="p-3">Referência</th>
+                                    <th class="p-3 text-right">Valor</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-relatorio-resultados" class="divide-y divide-slate-100">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <div class="flex items-center gap-2 text-xs text-slate-500">
+                            <span>Registros por página:</span>
+                            <select id="relatorio-per-page" onchange="handleRelatorioPerPageChange()" class="px-2 py-1 border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span id="relatorio-page-info">0-0 de 0</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span id="relatorio-page-number" class="text-xs text-slate-500 min-w-[90px] text-center">Página 1 de 1</span>
+                            <button type="button" id="relatorio-prev-page" onclick="changeRelatorioPage(-1)" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all border border-slate-200">Anterior</button>
+                            <button type="button" id="relatorio-next-page" onclick="changeRelatorioPage(1)" class="px-3 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-all border border-slate-200">Próxima</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="tab-agenda" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-5">
+                        <div>
+                            <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                                <i class="fa-solid fa-calendar-days text-[#7A0C1E]"></i> Agenda
+                            </h2>
+                            <p id="agenda-periodo" class="text-xs text-slate-400 mt-1"></p>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            <div class="flex rounded-lg border border-slate-200 overflow-hidden">
+                                <button id="btn-agenda-dia" onclick="setAgendaView('dia')" class="agenda-view-btn px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 transition-all">Dia</button>
+                                <button id="btn-agenda-semana" onclick="setAgendaView('semana')" class="agenda-view-btn px-3 py-2 text-xs bg-red-50 text-red-700 font-semibold transition-all">Semana</button>
+                                <button id="btn-agenda-mes" onclick="setAgendaView('mes')" class="agenda-view-btn px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 transition-all">Mês</button>
+                            </div>
+                            <button onclick="changeAgendaPeriod(-1)" class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="Período anterior">
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+                            <button onclick="goToCurrentAgendaPeriod()" class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition-all">Hoje</button>
+                            <button onclick="changeAgendaPeriod(1)" class="px-3 py-2 text-xs text-slate-600 hover:bg-slate-100 rounded-lg transition-all" title="Próximo período">
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            <button onclick="openAmbienteModal()" class="px-3 py-2 text-xs text-amber-700 hover:bg-amber-50 rounded-lg transition-all">
+                                <i class="fa-solid fa-door-open mr-1"></i> Novo Ambiente
+                            </button>
+                            <button onclick="openEventoSalaModal()" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-4 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm">
+                                <i class="fa-solid fa-plus mr-1"></i> Novo Evento
+                            </button>
+                        </div>
+                    </div>
+                    <div id="agenda-empty" class="hidden border border-dashed border-slate-200 rounded-xl p-8 text-center text-sm text-slate-500">
+                        Cadastre pelo menos um ambiente para começar a usar a agenda.
+                    </div>
+                    <div id="agenda-calendar-grid" class="grid grid-cols-1 md:grid-cols-7 gap-3"></div>
+                </div>
+            </section>
+
+            <section id="tab-ambientes" class="tab-content hidden opacity-0 translate-y-3 transition-all duration-300 ease-out">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+                        <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-door-open text-[#7A0C1E]"></i> Ambientes Cadastrados
+                        </h2>
+                        <button onclick="openAmbienteModal()" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-4 py-2 text-xs font-semibold rounded-lg transition-all shadow-sm">
+                            <i class="fa-solid fa-plus mr-1"></i> Novo Ambiente
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-100 text-slate-500 font-medium">
+                                    <th class="p-3">Ambiente</th>
+                                    <th class="p-3">Capacidade</th>
+                                    <th class="p-3">Observação</th>
+                                    <th class="p-3 text-center">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-ambientes" class="divide-y divide-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <div id="modal-notificacao" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div id="modal-notificacao-header" class="bg-slate-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Notificação</h3>
+                <button id="modal-notificacao-close" onclick="closeNotificacaoModal()" class="text-white hover:text-slate-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p id="notificacao-mensagem" class="text-sm text-slate-700"></p>
+                <div class="mt-6 flex justify-end">
+                    <button id="modal-notificacao-ok" onclick="closeNotificacaoModal()" class="bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 text-sm font-semibold rounded-lg transition-all">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-confirmacao" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[70] opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div class="bg-rose-600 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Confirmar Exclusão</h3>
+                <button onclick="closeConfirmacaoModal()" class="text-white hover:text-rose-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <p id="confirmacao-mensagem" class="text-sm text-slate-700 leading-relaxed"></p>
+                <div class="mt-6 flex justify-end gap-2">
+                    <button onclick="closeConfirmacaoModal()" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                    <button id="btn-confirmar-exclusao" class="bg-rose-600 hover:bg-rose-700 text-white px-4 py-2 text-sm font-semibold rounded-lg transition-all">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-dizimista" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-md w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <input type="hidden" id="modal-id">
+            <div class="bg-[#7A0C1E] text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Detalhes do Dizimista</h3>
+                <button onclick="closeDizimistaModal()" class="text-white hover:text-red-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 uppercase">Nome Completo</label>
+                        <p id="modal-nome" class="text-sm font-medium text-slate-800 mt-1"></p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-xs font-semibold text-slate-500 uppercase">Telefone</label>
+                            <p id="modal-telefone" class="text-sm text-slate-600 mt-1"></p>
+                        </div>
+                        <div>
+                            <label class="text-xs font-semibold text-slate-500 uppercase">Nascimento</label>
+                            <p id="modal-nascimento" class="text-sm text-slate-600 mt-1"></p>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-xs font-semibold text-slate-500 uppercase">Endereço</label>
+                        <p id="modal-endereco" class="text-sm text-slate-600 mt-1"></p>
+                    </div>
+                    <div class="border-t border-slate-100 pt-4 mt-4">
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-semibold text-slate-500 uppercase">Histórico de Devoluções</label>
+                            <select id="filter-ano-devolucao" onchange="filterDevolucoesByYear()" class="px-2 py-1 text-xs border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E]">
+                                <option value="">Todos os anos</option>
+                            </select>
+                        </div>
+                        <div id="modal-devolucoes" class="space-y-2 max-h-40 overflow-y-auto">
+                            </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-2">
+                    <button onclick="editFromDizimistaModal();" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-4 py-2 text-sm font-semibold rounded-lg transition-all">
+                        <i class="fa-solid fa-pen mr-1.5"></i> Editar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="modal-editar-devolucao" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[60] opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div class="bg-[#7A0C1E] text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Editar Lançamento de Dízimo</h3>
+                <button onclick="closeEditarDevolucaoModal()" class="text-white hover:text-red-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="saveEditedDevolucao(event)" class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="hidden" id="editar-devolucao-id">
+                <input type="hidden" id="editar-devolucao-dizimista">
+                <div class="sm:col-span-2 relative">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Dizimista</label>
+                    <input type="text" id="editar-devolucao-dizimista-search" required oninput="filterEditarDizimistasSelect(this.value)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                    <div id="editar-devolucao-dizimista-dropdown" class="absolute z-10 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto hidden"></div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Valor (R$)</label>
+                    <input type="text" id="editar-devolucao-valor" required oninput="maskCurrency(this)" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Data</label>
+                    <input type="date" id="editar-devolucao-data" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Referência</label>
+                    <input type="month" id="editar-devolucao-referencia" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2 flex justify-between gap-2 mt-2">
+                    <button type="button" onclick="confirmDeleteDevolucaoFromEdit()" class="px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-all"><i class="fa-solid fa-trash mr-1"></i> Excluir</button>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" onclick="closeEditarDevolucaoModal()" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                    <button type="submit" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">Salvar Alterações</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-ambiente" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-lg w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div class="bg-[#7A0C1E] text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="ambiente-modal-title" class="text-lg font-bold">Cadastrar Ambiente</h3>
+                <button onclick="closeAmbienteModal()" class="text-white hover:text-red-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="saveAmbiente(event)" class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="hidden" id="ambiente-id">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nome do Ambiente</label>
+                    <input type="text" id="ambiente-nome" required placeholder="Ex.: Salão Paroquial" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Capacidade</label>
+                    <input type="number" id="ambiente-capacidade" min="0" placeholder="Ex.: 80" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Observação</label>
+                    <input type="text" id="ambiente-observacao" placeholder="Opcional" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2 flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeAmbienteModal()" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                    <button type="submit" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">Salvar Ambiente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-evento-sala" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50 opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div class="bg-[#7A0C1E] text-white px-6 py-4 flex justify-between items-center">
+                <h3 id="evento-sala-modal-title" class="text-lg font-bold">Cadastrar Evento</h3>
+                <button onclick="closeEventoSalaModal()" class="text-white hover:text-red-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="saveEventoSala(event)" class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <input type="hidden" id="evento-sala-id">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Título do Evento</label>
+                    <input type="text" id="evento-sala-titulo" required placeholder="Ex.: Reunião da Pastoral" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Ambiente</label>
+                    <select id="evento-sala-ambiente" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Responsável</label>
+                    <input type="text" id="evento-sala-responsavel" placeholder="Nome ou pastoral/grupo" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Data</label>
+                    <input type="date" id="evento-sala-data" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Início</label>
+                    <input type="time" id="evento-sala-inicio" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Fim</label>
+                    <input type="time" id="evento-sala-fim" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Repetição</label>
+                    <select id="evento-sala-repeticao" onchange="toggleEventoSalaRepeticao()" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                        <option value="">Não repetir</option>
+                        <option value="semanal">Semanalmente</option>
+                        <option value="mensal">Mensalmente</option>
+                    </select>
+                </div>
+                <div id="evento-sala-repetir-ate-wrapper" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Repetir Até</label>
+                    <input type="date" id="evento-sala-repetir-ate" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Observação</label>
+                    <input type="text" id="evento-sala-observacao" placeholder="Opcional" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2 flex justify-between gap-2 mt-2">
+                    <button type="button" id="btn-excluir-evento-sala" onclick="confirmDeleteEventoSalaFromEdit()" class="hidden px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 rounded-lg transition-all"><i class="fa-solid fa-trash mr-1"></i> Excluir</button>
+                    <div class="flex justify-end gap-2 ml-auto">
+                        <button type="button" onclick="closeEventoSalaModal()" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                        <button type="submit" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">Salvar Evento</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-configuracao" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-[80] opacity-0 transition-opacity duration-200 ease-out">
+        <div class="modal-panel bg-white rounded-xl shadow-2xl max-w-xl w-full mx-4 overflow-hidden opacity-0 translate-y-3 scale-95 transition-all duration-200 ease-out">
+            <div class="bg-[#7A0C1E] text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold">Configuração da Paróquia</h3>
+                <button onclick="closeConfigModal()" class="text-white hover:text-red-200 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <form onsubmit="saveParoquiaConfig(event)" class="p-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Nome da Paróquia</label>
+                    <input type="text" id="cfg-nome-paroquia" required class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Localização</label>
+                    <input type="text" id="cfg-localizacao" placeholder="Bairro, Cidade - UF" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:border-[#7A0C1E] transition-all">
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">Brasão (PNG/JPG)</label>
+                    <input type="file" id="cfg-brasao-file" accept="image/png,image/jpeg,image/webp" class="w-full text-sm">
+                </div>
+                <div class="sm:col-span-2 flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeConfigModal()" class="px-4 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100 rounded-lg transition-all">Cancelar</button>
+                    <button type="submit" class="bg-[#7A0C1E] hover:bg-red-900 text-white px-5 py-2 text-sm font-semibold rounded-lg transition-all shadow-sm">Salvar Configuração</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="js/db.js"></script>
+    <script src="js/core/formatters.js"></script>
+    <script src="js/core/masks.js"></script>
+    <script src="js/core/navigation.js"></script>
+    <script src="js/ui/modals.js"></script>
+    <script src="js/features/dizimistas.js"></script>
+    <script src="js/features/dizimistas-table.js"></script>
+    <script src="js/features/devolucoes.js"></script>
+    <script src="js/features/aniversariantes.js"></script>
+    <script src="js/features/relatorios.js"></script>
+    <script src="js/features/dashboard.js"></script>
+    <script src="js/features/exportacoes.js"></script>
+    <script src="js/features/agenda.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,82 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+:root {
+    --sgp-primary: #7A0C1E;
+    --sgp-primary-dark: #5f0a17;
+    --sgp-accent: #E5A93B;
+    --sgp-agenda: #b45309;
+    --sgp-agenda-dark: #92400e;
+    --sgp-location: Tabuleiro do Martins, Maceio - AL;
+}
+
+.module-home {
+    background:
+        linear-gradient(135deg, rgba(122, 12, 30, 0.08), transparent 34%),
+        linear-gradient(315deg, rgba(229, 169, 59, 0.18), transparent 38%),
+        #f7f3ee;
+}
+
+.module-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.module-card-square {
+    background: linear-gradient(150deg, var(--sgp-primary), color-mix(in srgb, var(--sgp-primary) 82%, black));
+    border: 2px solid transparent;
+    transform: translateY(0) scale(1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, filter 0.2s ease;
+}
+
+.module-card-square-amber {
+    background: linear-gradient(150deg, var(--sgp-agenda), var(--sgp-agenda-dark));
+}
+
+.module-card-square:hover {
+    transform: translateY(-2px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.45);
+    box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+}
+
+.module-card-square:active {
+    transform: translateY(0) scale(0.99);
+    filter: brightness(0.98);
+}
+
+.confirm-object {
+    display: inline-block;
+    background: #E11D48;
+    color: white;
+    border-radius: 0.45rem;
+    padding: 0.1rem 0.45rem;
+    font-weight: 700;
+}
+
+.list-fade {
+    opacity: 0.4;
+    transform: translateY(4px);
+    transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.sgp-header {
+    background: var(--sgp-primary) !important;
+    border-bottom-color: var(--sgp-accent) !important;
+}
+
+.whereami-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 999px;
+    padding: 0.2rem 0.55rem;
+    margin-top: 0.35rem;
+}
